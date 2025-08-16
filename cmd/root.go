@@ -8,8 +8,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "asr",
-	Short: "asr (Attack Surface Reduction as Code) is a Lightweight tool to scan AWS resources for security misconfiguration",
+	Use:   "asr-recon",
+	Short: "asr-recon (Attack Surface Reduction as Code) is a Lightweight tool to scan AWS resources for security misconfiguration",
 	Long: `The asr (Attack Surface Reduction as Code) CLI helps identify and reduce
 cloud misconfigurations directly from your terminal.  
 

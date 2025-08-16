@@ -16,7 +16,6 @@ var getBucketsCmd = &cobra.Command{
 	Long:    "",
 
 	Run: func(cmd *cobra.Command, args []string) {
-
 		s3.ListBuckets(context.Background())
 		buckets, err := s3.ListBuckets(context.Background())
 		if err != nil {
