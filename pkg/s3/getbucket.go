@@ -13,10 +13,10 @@ import (
 )
 
 type BucketFindings struct {
-	name          string
-	isPublic      bool
-	hasEncryption bool
-	bucketPolicy  string
+	Name          string
+	IsPublic      bool
+	HasEncryption bool
+	BucketPolicy  string
 }
 
 func ListBuckets(ctx context.Context) ([]types.Bucket, error) {
@@ -131,18 +131,18 @@ func BucketResults() ([]BucketFindings, error) {
 		b := BucketFindings{}
 
 		// creating the instances of the BucketFindings
-		b.name = *value.Name
-		b.hasEncryption, err = GetBucketEncryption(*value.Name)
+		b.Name = *value.Name
+		b.HasEncryption, err = GetBucketEncryption(*value.Name)
 		if err != nil {
 			return nil, err
 		}
-		b.isPublic, err = GetBucketPublicAccess(*value.Name)
+		b.IsPublic, err = GetBucketPublicAccess(*value.Name)
 		if err != nil {
 			return nil, err
 		}
 		findings = append(findings, b)
 
-		b.bucketPolicy, err = GetBucketPolicy(*value.Name)
+		b.BucketPolicy, err = GetBucketPolicy(*value.Name)
 		if err != nil {
 			return nil, err
 		}
