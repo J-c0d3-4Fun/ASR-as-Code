@@ -30,8 +30,8 @@ var getBucketsCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		for _, finding := range findings {
-			fmt.Printf("\nBucket: %s\n Public: %v\n Encrypted: %v\n BucketPolicy: %v\n",
-				finding.Name, finding.IsPublic, finding.HasEncryption, finding.BucketPolicy)
+			fmt.Printf("\nBucket: %s\n Public: %v\n Encrypted: %v\n BucketPolicyStatus: %v\n BucketPolicy: %v \n",
+				finding.Name, finding.IsPublic, finding.HasEncryption, finding.BucketPolicyStatus, finding.BucketPolicy)
 		}
 
 	},

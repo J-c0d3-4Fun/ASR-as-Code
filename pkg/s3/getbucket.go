@@ -13,10 +13,11 @@ import (
 )
 
 type BucketFindings struct {
-	Name          string
-	IsPublic      bool
-	HasEncryption bool
-	BucketPolicy  string
+	Name               string
+	IsPublic           bool
+	HasEncryption      bool
+	BucketPolicyStatus string
+	BucketPolicy       string
 }
 
 func ListBuckets(ctx context.Context) ([]types.Bucket, error) {
@@ -82,21 +83,43 @@ func GetBucketEncryption(bucketName string) (bool, error) {
 	return false, nil
 
 }
-func GetBucketPolicy(bucketName string) (string, error) {
+func GetBucketPolicyStatus(bucketName string) (string, error) {
 	if bucketName == "" {
 		return "", errors.New("bucket name cannot be empty")
 	}
-	output, err := auth.S3.GetBucketPolicy(context.TODO(), &s3.GetBucketPolicyInput{
+	output, err := auth.S3.GetBucketPolicyStatus(context.TODO(), &s3.GetBucketPolicyStatusInput{
+		// bucket parameter for call
 		Bucket: &bucketName,
 	})
 
 	if err != nil {
 		return "", nil
 	}
-	if output.Policy != nil {
-		return *output.Policy, nil
+	if output.PolicyStatus != nil {
+		// converting to string
+		return fmt.Sprint(output.PolicyStatus.IsPublic), nil
 	}
 	return "", nil
+
+}
+
+func GetBucketPolicy(bucketName string) (string, error) {
+	if bucketName == "" {
+		return "", errors.New("bucket name cannot be empty")
+	}
+	output2, err := auth.S3.GetBucketPolicy(context.TODO(), &s3.GetBucketPolicyInput{
+		// Must set the bucket name to make a call. converting the cunftion parmaeter to the required pointer type
+		Bucket: &bucketName,
+	})
+
+	if err != nil {
+		return "", err
+	}
+	if output2.Policy != nil {
+		return *output2.Policy, nil
+
+	}
+	return "No Policy", nil
 }
 
 func GetBucketRegion(bucketName string) (string, error) {
@@ -142,10 +165,31 @@ func BucketResults() ([]BucketFindings, error) {
 		}
 		findings = append(findings, b)
 
-		b.BucketPolicy, err = GetBucketPolicy(*value.Name)
+		b.BucketPolicyStatus, err = GetBucketPolicyStatus(*value.Name)
 		if err != nil {
 			return nil, err
 		}
+		for _, value := range results {
+			// call the function bucketRegion to get the current credentials region
+			bucketRegion, err := GetBucketRegion(*value.Name)
+			if err != nil {
+				continue
+			}
+			// skips the buckets that dont match the current region of the user
+			if bucketRegion != auth.Cfg.Region {
+				continue
+			}
+
+			b.BucketPolicy, err = GetBucketPolicy(*value.Name)
+
+			if err != nil {
+				// Log error but continue to next bucket
+				fmt.Printf("Error getting policy for %s: %v\n", *value.Name, err)
+				b.BucketPolicy = "Error"
+				// Don't return - keep processing other buckets
+			}
+		}
+
 	}
 	return findings, nil
 }
