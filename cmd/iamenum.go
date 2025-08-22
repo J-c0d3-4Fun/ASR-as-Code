@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	iam "ASR-as-Code/pkg/IAM"
+	Iam "ASR-as-Code/pkg/IAM"
 	"context"
 	"fmt"
 	"log"
@@ -16,8 +16,8 @@ var getIamPolicy = &cobra.Command{
 	Long:    "",
 
 	Run: func(cmd *cobra.Command, args []string) {
-		iam.ListPolicies(context.Background())
-		policy, err := iam.ListPolicies(context.Background())
+		Iam.ListPolicies(context.Background())
+		policy, err := Iam.ListPolicies(context.Background())
 		if err != nil {
 			log.Fatal(err)
 		}

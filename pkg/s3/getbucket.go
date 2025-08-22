@@ -97,9 +97,9 @@ func GetBucketPolicyStatus(bucketName string) (string, error) {
 	}
 	if output.PolicyStatus != nil {
 		// converting to string
-		return fmt.Sprint(output.PolicyStatus.IsPublic), nil
+		return fmt.Sprintf("IsPublic: %v", *output.PolicyStatus.IsPublic), nil
 	}
-	return "", nil
+	return "No Policy Status Available", nil
 
 }
 
@@ -114,7 +114,9 @@ func GetBucketPolicy(bucketName string) (string, error) {
 
 	if err != nil {
 		return "", err
+
 	}
+
 	if output2.Policy != nil {
 		return *output2.Policy, nil
 
@@ -143,53 +145,35 @@ func BucketResults() ([]BucketFindings, error) {
 	// Looping through the object/function ListBuckets of the variable results
 	for _, value := range results {
 		// call the function bucketRegion to get the current credentials region
+
 		bucketRegion, err := GetBucketRegion(*value.Name)
-		if err != nil {
-			continue
+		if err != nil || bucketRegion != auth.Cfg.Region {
+			continue // skips the buckets that dont match the current region of the user (bucketRegion)
 		}
-		// skips the buckets that dont match the current region of the user
-		if bucketRegion != auth.Cfg.Region {
-			continue
-		}
+
 		b := BucketFindings{}
 
 		// creating the instances of the BucketFindings
 		b.Name = *value.Name
 		b.HasEncryption, err = GetBucketEncryption(*value.Name)
-		if err != nil {
-			return nil, err
-		}
 		b.IsPublic, err = GetBucketPublicAccess(*value.Name)
-		if err != nil {
-			return nil, err
-		}
-		findings = append(findings, b)
-
 		b.BucketPolicyStatus, err = GetBucketPolicyStatus(*value.Name)
+
+		b.BucketPolicy, err = GetBucketPolicy(*value.Name)
+
 		if err != nil {
-			return nil, err
-		}
-		for _, value := range results {
-			// call the function bucketRegion to get the current credentials region
-			bucketRegion, err := GetBucketRegion(*value.Name)
-			if err != nil {
-				continue
-			}
-			// skips the buckets that dont match the current region of the user
-			if bucketRegion != auth.Cfg.Region {
-				continue
-			}
+			var apiErr smithy.APIError
+			if errors.As(err, &apiErr) {
+				if apiErr.ErrorCode() == "NoSuchBucketPolicy" {
+					b.BucketPolicy = "No Policy"
+					err = nil
+				}
 
-			b.BucketPolicy, err = GetBucketPolicy(*value.Name)
-
-			if err != nil {
-				// Log error but continue to next bucket
-				fmt.Printf("Error getting policy for %s: %v\n", *value.Name, err)
-				b.BucketPolicy = "Error"
-				// Don't return - keep processing other buckets
 			}
 		}
 
+		findings = append(findings, b)
 	}
 	return findings, nil
+
 }
