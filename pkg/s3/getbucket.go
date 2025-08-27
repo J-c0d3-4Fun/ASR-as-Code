@@ -1,6 +1,7 @@
 package s3
 
 import (
+	s3auth "ASR-as-Code/pkg/auth"
 	"context"
 	"errors"
 	"fmt"
@@ -22,7 +23,7 @@ type BucketFindings struct {
 
 func ListBuckets(ctx context.Context) ([]types.Bucket, error) {
 	// calls Auth struct in auth.go
-	auth, err := NewAuthenticator()
+	auth, err := s3auth.NewAuthenticator()
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +55,7 @@ func GetBucketPublicAccess(bucketName string) (bool, error) {
 	if bucketName == "" {
 		return false, errors.New("bucket name cannot be empty")
 	}
-	output, err := auth.S3.GetPublicAccessBlock(context.TODO(), &s3.GetPublicAccessBlockInput{
+	output, err := Sess.S3.GetPublicAccessBlock(context.TODO(), &s3.GetPublicAccessBlockInput{
 		Bucket: &bucketName,
 	})
 	if err != nil {
@@ -71,7 +72,7 @@ func GetBucketEncryption(bucketName string) (bool, error) {
 	if bucketName == "" {
 		return false, errors.New("bucket name cannot be empty")
 	}
-	output, err := auth.S3.GetBucketEncryption(context.TODO(), &s3.GetBucketEncryptionInput{
+	output, err := Sess.S3.GetBucketEncryption(context.TODO(), &s3.GetBucketEncryptionInput{
 		Bucket: &bucketName,
 	})
 	if err != nil {
@@ -83,11 +84,12 @@ func GetBucketEncryption(bucketName string) (bool, error) {
 	return false, nil
 
 }
+
 func GetBucketPolicyStatus(bucketName string) (string, error) {
 	if bucketName == "" {
 		return "", errors.New("bucket name cannot be empty")
 	}
-	output, err := auth.S3.GetBucketPolicyStatus(context.TODO(), &s3.GetBucketPolicyStatusInput{
+	output, err := Sess.S3.GetBucketPolicyStatus(context.TODO(), &s3.GetBucketPolicyStatusInput{
 		// bucket parameter for call
 		Bucket: &bucketName,
 	})
@@ -107,7 +109,7 @@ func GetBucketPolicy(bucketName string) (string, error) {
 	if bucketName == "" {
 		return "", errors.New("bucket name cannot be empty")
 	}
-	output2, err := auth.S3.GetBucketPolicy(context.TODO(), &s3.GetBucketPolicyInput{
+	output2, err := Sess.S3.GetBucketPolicy(context.TODO(), &s3.GetBucketPolicyInput{
 		// Must set the bucket name to make a call. converting the cunftion parmaeter to the required pointer type
 		Bucket: &bucketName,
 	})
@@ -125,7 +127,7 @@ func GetBucketPolicy(bucketName string) (string, error) {
 }
 
 func GetBucketRegion(bucketName string) (string, error) {
-	output, err := auth.S3.GetBucketLocation(context.TODO(), &s3.GetBucketLocationInput{
+	output, err := Sess.S3.GetBucketLocation(context.TODO(), &s3.GetBucketLocationInput{
 		Bucket: aws.String(bucketName),
 	})
 	if err != nil {
@@ -147,7 +149,7 @@ func BucketResults() ([]BucketFindings, error) {
 		// call the function bucketRegion to get the current credentials region
 
 		bucketRegion, err := GetBucketRegion(*value.Name)
-		if err != nil || bucketRegion != auth.Cfg.Region {
+		if err != nil || bucketRegion != Sess.Cfg.Region {
 			continue // skips the buckets that dont match the current region of the user (bucketRegion)
 		}
 
@@ -175,5 +177,17 @@ func BucketResults() ([]BucketFindings, error) {
 		findings = append(findings, b)
 	}
 	return findings, nil
+
+}
+
+var Sess *s3auth.Auth
+
+// initializes the auth.go first allows us to use the AWS creds
+func init() {
+	var err error
+	Sess, err = s3auth.NewAuthenticator()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
