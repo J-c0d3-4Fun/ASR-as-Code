@@ -13,6 +13,12 @@ import (
 	"github.com/aws/smithy-go"
 )
 
+// TODO Add notes for reach function
+// ! Fix me!
+// *
+// ?
+//
+
 type BucketFindings struct {
 	Name               string
 	IsPublic           bool
@@ -136,6 +142,8 @@ func GetBucketRegion(bucketName string) (string, error) {
 	return string(output.LocationConstraint), nil
 
 }
+
+// Get rid of this function
 
 func BucketResults() ([]BucketFindings, error) {
 	// create a array of the object BucketFidings

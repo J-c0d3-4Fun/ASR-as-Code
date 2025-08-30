@@ -1,7 +1,8 @@
-package Iam
+package iam
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	auth "ASR-as-Code/pkg/auth"
@@ -21,6 +22,35 @@ func ListPolicies(ctx context.Context) ([]types.Policy, error) {
 	}
 	return policies, err
 }
+
+// List all the current users
+func ListUsers(ctx context.Context) ([]types.User, error) {
+	var users []types.User
+	listUsers, err := Sess.IAM.ListUsers(context.TODO(), &iam.ListUsersInput{})
+	if err != nil {
+		fmt.Printf("Error listing users: %v\n", err)
+	} else {
+		users = listUsers.Users
+	}
+	return users, err
+
+}
+
+func CheckMFA(ctx context.Context, userNames *string) ([]types.MFADevice, error) {
+	var mfa []types.MFADevice
+	getMfa, err := Sess.IAM.ListMFADevices(context.TODO(), &iam.ListMFADevicesInput{
+		UserName: userNames,
+	})
+	if err != nil {
+		return nil, err
+	} else {
+		mfa = getMfa.MFADevices
+	}
+	return mfa, nil
+
+}
+
+// TODO create a function that sets the context the Background
 
 var Sess *auth.Auth
 
