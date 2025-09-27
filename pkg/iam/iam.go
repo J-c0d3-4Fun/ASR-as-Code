@@ -50,6 +50,20 @@ func CheckMFA(ctx context.Context, userNames *string) ([]types.MFADevice, error)
 
 }
 
+func CheckAccessKeyCreationDate(ctx context.Context, userNames *string) ([]types.AccessKeyMetadata, error) {
+	var accesskey []types.AccessKeyMetadata
+	key, err := Sess.IAM.ListAccessKeys(context.TODO(), &iam.ListAccessKeysInput{
+		UserName: userNames,
+	})
+	if err != nil {
+		return nil, err
+	} else {
+		accesskey = key.AccessKeyMetadata
+	}
+	return accesskey, nil
+
+}
+
 // TODO create a function that sets the context the Background
 
 var Sess *auth.Auth

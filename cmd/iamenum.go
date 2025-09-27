@@ -34,6 +34,15 @@ var getIamPolicy = &cobra.Command{
 			fmt.Printf("- %s\n", *u.UserName)
 		}
 
+		key, err := Iam.CheckAccessKeyCreationDate(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("Found %d Keys:\n", len(key))
+		for _, u := range user {
+			fmt.Printf("- %s\n", *u.UserName)
+		}
+
 		for _, users := range user {
 			mfa, err := Iam.CheckMFA(context.Background(), users.UserName)
 			if err != nil {
