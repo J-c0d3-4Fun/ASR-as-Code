@@ -50,11 +50,9 @@ func CheckMFA(ctx context.Context, userNames *string) ([]types.MFADevice, error)
 
 }
 
-func CheckAccessKeyCreationDate(ctx context.Context, userNames *string) ([]types.AccessKeyMetadata, error) {
+func CheckAccessKeyCreationDate(ctx context.Context) ([]types.AccessKeyMetadata, error) {
 	var accesskey []types.AccessKeyMetadata
-	key, err := Sess.IAM.ListAccessKeys(context.TODO(), &iam.ListAccessKeysInput{
-		UserName: userNames,
-	})
+	key, err := Sess.IAM.ListAccessKeys(context.TODO(), &iam.ListAccessKeysInput{})
 	if err != nil {
 		return nil, err
 	} else {

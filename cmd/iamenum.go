@@ -39,8 +39,9 @@ var getIamPolicy = &cobra.Command{
 			log.Fatal(err)
 		}
 		fmt.Printf("Found %d Keys:\n", len(key))
-		for _, u := range user {
-			fmt.Printf("- %s\n", *u.UserName)
+		for _, u := range key {
+			fmt.Printf("User %s:\n", *u.UserName)
+			fmt.Printf("- %s\n", u.Status)
 		}
 
 		for _, users := range user {
